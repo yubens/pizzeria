@@ -8,19 +8,29 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rubenlucero.pizzeria.models.dao.IOrderDao;
+import com.rubenlucero.pizzeria.models.dao.IOrderItemDao;
 import com.rubenlucero.pizzeria.models.dto.ResponseItemDto;
 import com.rubenlucero.pizzeria.models.dto.ResponseOrderDto;
 import com.rubenlucero.pizzeria.models.entity.OrderHeader;
 import com.rubenlucero.pizzeria.models.entity.OrderItem;
+import com.rubenlucero.pizzeria.models.entity.Product;
 
 @Service
 public class OrderService implements IOrderService {
 	@Autowired
 	private IOrderDao orderDao;
+	
+	@Autowired
+	private IOrderItemDao orderItemDao;
+	
+	@Autowired
+	private IProductService productService;
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<ResponseOrderDto> findAll() {
 		List<OrderHeader> orders = (List<OrderHeader>) orderDao.findAll();
 		
@@ -31,6 +41,7 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public List<ResponseOrderDto> findByCreatedAt(String createdAt) {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		Date aux = null;
@@ -90,12 +101,58 @@ public class OrderService implements IOrderService {
 			
 			orderDto.setDate(aux);
 			
-			response.add(orderDto);
-			
+			response.add(orderDto);			
 			
 		}
 		
 		return response;
 	}
+
+	@Override
+	@Transactional
+	public ResponseOrderDto save(ResponseOrderDto orderDto) {
+		OrderHeader orderSaved, order;
+		Product product;
+		OrderItem item;
+		List<OrderItem> items = new ArrayList<>();
+		
+		order = new OrderHeader();
+		
+		for (ResponseItemDto itemDto: orderDto.getItems()) {
+			item = new OrderItem();
+			product = productService.findById(itemDto.getProductId());
+			item.setQuantity(itemDto.getQuantity());
+			item.setPrice(itemDto.getQuantity() * product.getUnitPrice());
+			item.setProduct(product);
+			items.add(item);
+		}
+		
+		order.setItems(items);
+		order.setAddress(orderDto.getAddress());
+		order.setEmail(orderDto.getEmail());
+		order.setPhone(orderDto.getPhone());
+		order.setSchedule(orderDto.getSchedule());
+		order.setStatus("PENDIENTE");
+		
+		
+		order.setDiscount(false);
+		order.setTotal(0.0);
+		
+		
+		orderSaved = orderDao.save(order);
+		
+		for (OrderItem itemAux: orderSaved.getItems()) {
+			itemAux.setOrderHeader(orderSaved);
+			orderItemDao.save(itemAux);
+		}
+		
+		List<OrderHeader> orderHeaders = new ArrayList<>();
+		orderHeaders.add(orderSaved);
+		
+		ResponseOrderDto responseOrderDto = getOrdersDto(orderHeaders).get(0);
+		return responseOrderDto;
+	}
+	
+	
 
 }
