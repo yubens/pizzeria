@@ -101,8 +101,7 @@ public class OrderService implements IOrderService {
 			
 			orderDto.setDate(aux);
 			
-			response.add(orderDto);			
-			
+			response.add(orderDto);					
 		}
 		
 		return response;
@@ -115,16 +114,21 @@ public class OrderService implements IOrderService {
 		Product product;
 		OrderItem item;
 		List<OrderItem> items = new ArrayList<>();
+		int quantity = 0;
+		double total = 0.0;
 		
 		order = new OrderHeader();
 		
 		for (ResponseItemDto itemDto: orderDto.getItems()) {
 			item = new OrderItem();
 			product = productService.findById(itemDto.getProductId());
-			item.setQuantity(itemDto.getQuantity());
+			item.setQuantity(itemDto.getQuantity());			
 			item.setPrice(itemDto.getQuantity() * product.getUnitPrice());
 			item.setProduct(product);
 			items.add(item);
+			
+			quantity += item.getQuantity();
+			total += item.getPrice();
 		}
 		
 		order.setItems(items);
@@ -134,10 +138,13 @@ public class OrderService implements IOrderService {
 		order.setSchedule(orderDto.getSchedule());
 		order.setStatus("PENDIENTE");
 		
-		
-		order.setDiscount(false);
-		order.setTotal(0.0);
-		
+		if (quantity > 3) {
+			order.setDiscount(true);
+			order.setTotal(total * 0.7);
+		} else {
+			order.setDiscount(false);
+			order.setTotal(total);
+		}
 		
 		orderSaved = orderDao.save(order);
 		

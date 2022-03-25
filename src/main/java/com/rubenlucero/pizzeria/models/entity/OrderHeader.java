@@ -1,6 +1,8 @@
 package com.rubenlucero.pizzeria.models.entity;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -40,7 +42,19 @@ public class OrderHeader implements Serializable {
 
 	@PrePersist
 	public void prePersit() {
-		createdAt = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		String aux = null;
+		Date date = new Date();
+
+		try {
+			aux = formatter.format(date);
+			date = formatter.parse(aux);
+			
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		
+		createdAt = date;
 	}
 	
 	@Id
