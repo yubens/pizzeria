@@ -2,6 +2,9 @@ package com.rubenlucero.pizzeria.models.dto;
 
 import java.io.Serializable;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 public class ResponseItemDto implements Serializable {
 
 	/**
@@ -13,6 +16,8 @@ public class ResponseItemDto implements Serializable {
 	private int quantity;
 	private Double price;	
 
+	@NotNull
+    @Min(1)
 	public Long getProductId() {
 		return productId;
 	}
@@ -29,6 +34,8 @@ public class ResponseItemDto implements Serializable {
 		this.productName = productName;
 	}
 
+	@NotNull
+    @Min(1)
 	public int getQuantity() {
 		return quantity;
 	}

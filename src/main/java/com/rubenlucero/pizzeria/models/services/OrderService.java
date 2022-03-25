@@ -110,6 +110,7 @@ public class OrderService implements IOrderService {
 	@Override
 	@Transactional
 	public ResponseOrderDto save(ResponseOrderDto orderDto) {
+		ResponseOrderDto responseOrderDto;
 		OrderHeader orderSaved, order;
 		Product product;
 		OrderItem item;
@@ -122,6 +123,21 @@ public class OrderService implements IOrderService {
 		for (ResponseItemDto itemDto: orderDto.getItems()) {
 			item = new OrderItem();
 			product = productService.findById(itemDto.getProductId());
+			
+			if (product == null) {
+				responseOrderDto = new ResponseOrderDto();
+				responseOrderDto.setStatus("product not found");
+				responseOrderDto.setTotal(-1.0);
+				return responseOrderDto;
+			}
+			
+			if (itemDto.getQuantity() <= 0) {
+				responseOrderDto = new ResponseOrderDto();
+				responseOrderDto.setStatus("invalid quantity");
+				responseOrderDto.setTotal(-1.0);
+				return responseOrderDto;
+			}
+			
 			item.setQuantity(itemDto.getQuantity());			
 			item.setPrice(itemDto.getQuantity() * product.getUnitPrice());
 			item.setProduct(product);
@@ -148,6 +164,13 @@ public class OrderService implements IOrderService {
 		
 		orderSaved = orderDao.save(order);
 		
+		if (orderSaved == null) {
+			responseOrderDto = new ResponseOrderDto();
+			responseOrderDto.setStatus("order not created");
+			responseOrderDto.setTotal(-1.0);
+			return responseOrderDto;
+		}
+		
 		for (OrderItem itemAux: orderSaved.getItems()) {
 			itemAux.setOrderHeader(orderSaved);
 			orderItemDao.save(itemAux);
@@ -156,7 +179,7 @@ public class OrderService implements IOrderService {
 		List<OrderHeader> orderHeaders = new ArrayList<>();
 		orderHeaders.add(orderSaved);
 		
-		ResponseOrderDto responseOrderDto = getOrdersDto(orderHeaders).get(0);
+		responseOrderDto = getOrdersDto(orderHeaders).get(0);
 		return responseOrderDto;
 	}
 	

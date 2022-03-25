@@ -8,6 +8,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class OrderItem implements Serializable {
@@ -24,6 +26,8 @@ public class OrderItem implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@NotNull
+    @Min(1)
 	public Long getId() {
 		return id;
 	}
@@ -32,6 +36,8 @@ public class OrderItem implements Serializable {
 		this.id = id;
 	}
 
+	@NotNull
+    @Min(1)
 	public int getQuantity() {
 		return quantity;
 	}

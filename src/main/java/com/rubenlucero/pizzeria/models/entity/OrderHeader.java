@@ -15,6 +15,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -67,6 +70,8 @@ public class OrderHeader implements Serializable {
 		this.id = id;
 	}
 
+	@NotEmpty
+	@Size(min = 4, max = 250)
 	public String getAddress() {
 		return address;
 	}
@@ -75,6 +80,8 @@ public class OrderHeader implements Serializable {
 		this.address = address;
 	}
 
+	@NotEmpty
+	@Email
 	public String getEmail() {
 		return email;
 	}
